@@ -1,6 +1,6 @@
-import { ensureElement } from "../utils/utils";
-import { Component } from "./base/Component";
-import { IEvents } from "./base/events";
+import { ensureElement } from "../shared/utils";
+import { Component } from "../shared/Component";
+import { IEvents } from "../shared/events";
 
 interface IModalData {
     content: HTMLElement;
@@ -27,7 +27,6 @@ export class Modal extends Component<IModalData> {
 
     open() {
         this.container.classList.add('modal_active');
-        this.events.emit('modal:open');
     }
 
     close() {

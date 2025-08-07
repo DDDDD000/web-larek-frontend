@@ -1,4 +1,4 @@
-import { IEvents } from "../components/base/events";
+import { IEvents } from "../shared/events";
 
 export interface IProduct {
     id: string;
