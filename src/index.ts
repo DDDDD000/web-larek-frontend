@@ -37,12 +37,12 @@ const checkoutModel = new CheckoutModel();
 //Views
 const productView = new ProductView(gallery, events);
 const basketView = new BasketView(basketElement, events);
-const checkoutView = new CheckoutView(basketElement, events)
+const checkoutView = new CheckoutView(basketElement, events, checkoutModel)
 
 //Презентеры
 const productPresenter = new ProductPresenter(productModel, productView, events, basketModel);
-const checkoutPresenter = new CheckoutPresenter(checkoutView)
-const basketPresenter = new BasketPresenter(basketModel, basketView, events, checkoutPresenter)
+const checkoutPresenter = new CheckoutPresenter(checkoutView, events, basketModel)
+const basketPresenter = new BasketPresenter(basketModel, basketView, events, checkoutModel)
 
 productPresenter.init();
 basketPresenter.init()
