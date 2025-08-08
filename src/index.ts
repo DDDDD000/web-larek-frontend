@@ -8,6 +8,9 @@ import { BasketPresenter } from './presenter/BasketPresenter';
 import { BasketModel } from './model/BasketModel';
 import { BasketView } from './view/BasketView';
 import { HeaderView } from './view/HeaderView';
+import { CheckoutView } from './view/CheckoutView';
+import { CheckoutPresenter } from './presenter/CheckoutPresenter';
+import { CheckoutModel } from './model/CheckoutModel';
 
 
 // Событийный брокер
@@ -29,15 +32,17 @@ const cardBasketTemplate = ensureElement<HTMLTemplateElement>('#card-basket');
 //Модели
 const productModel = new ProductModel();
 const basketModel = new BasketModel();
+const checkoutModel = new CheckoutModel();
 
 //Views
 const productView = new ProductView(gallery, events);
 const basketView = new BasketView(basketElement, events);
+const checkoutView = new CheckoutView(basketElement, events)
 
 //Презентеры
 const productPresenter = new ProductPresenter(productModel, productView, events, basketModel);
-const basketPresenter = new BasketPresenter(basketModel, basketView, events)
+const checkoutPresenter = new CheckoutPresenter(checkoutView)
+const basketPresenter = new BasketPresenter(basketModel, basketView, events, checkoutPresenter)
 
 productPresenter.init();
 basketPresenter.init()
-

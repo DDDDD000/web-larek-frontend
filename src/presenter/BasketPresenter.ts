@@ -3,15 +3,18 @@ import { BasketModel } from "../model/BasketModel";
 import { IBasketCard } from "../model/types";
 import { IEvents } from "../shared/events";
 import { BasketView } from "../view/BasketView";
+import { CheckoutPresenter } from "./CheckoutPresenter";
 
 export class BasketPresenter {
     protected _model: BasketModel;
     protected _view: BasketView;
     private _modal: Modal;
+    private _checkoutPresenter: CheckoutPresenter;
 
-    constructor(model: BasketModel, view: BasketView, private events: IEvents) {
+    constructor(model: BasketModel, view: BasketView, private events: IEvents, checkoutPresenter: CheckoutPresenter) {
         this._model = model
         this._view = view
+        this._checkoutPresenter = checkoutPresenter;
 
         const modalContainer = document.querySelector('.modal') as HTMLElement
         this._modal = new Modal(modalContainer, this.events)
@@ -43,10 +46,12 @@ export class BasketPresenter {
     }
 
     handleOpen() {
-        this._modal.render({ content: this._view.container })
+        this._view.renderBasket(this._model.products);
+
+        this._modal.render({ content: this._view.container });
     }
 
     handleOrder() {
-        console.log('Оформляем заказ...');
+        this._checkoutPresenter.render();
     }
 }
