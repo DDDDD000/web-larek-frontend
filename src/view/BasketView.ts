@@ -57,4 +57,19 @@ export class BasketView {
     get container(): HTMLElement {
         return this._container;
     }
+
+    updateBasketCounter(count: number) {
+        const counter = document.querySelector('.header__basket-counter') as HTMLElement;
+        if (counter) {
+            counter.textContent = String(count);
+        }
+    }
+
+    setOrderButtonState(enabled: boolean) {
+        if (enabled) {
+            this._basketOrderButton.removeAttribute('disabled');
+        } else {
+            this._basketOrderButton.setAttribute('disabled', '');
+        }
+    }
 }

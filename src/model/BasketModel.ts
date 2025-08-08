@@ -28,4 +28,8 @@ export class BasketModel {
     get products(): IBasketCard[] {
         return this._products
     }
+
+    clearBasket() {
+        this._products = [];
+    }
 }

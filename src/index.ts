@@ -24,11 +24,6 @@ const gallery = document.querySelector('.gallery') as HTMLElement
 const basketTemplate = ensureElement<HTMLTemplateElement>('#basket');
 const basketElement = basketTemplate.content.firstElementChild!.cloneNode(true) as HTMLElement;
 
-//Темплейты
-const cardCatalogTemplate = ensureElement<HTMLTemplateElement>('#card-catalog');
-const cardPreviewTemplate = ensureElement<HTMLTemplateElement>('#card-preview');
-const cardBasketTemplate = ensureElement<HTMLTemplateElement>('#card-basket');
-
 //Модели
 const productModel = new ProductModel();
 const basketModel = new BasketModel();
@@ -45,4 +40,5 @@ const checkoutPresenter = new CheckoutPresenter(checkoutView, events, basketMode
 const basketPresenter = new BasketPresenter(basketModel, basketView, events, checkoutModel)
 
 productPresenter.init();
-basketPresenter.init()
+basketPresenter.init();
+checkoutPresenter.init();

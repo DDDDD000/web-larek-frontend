@@ -41,7 +41,6 @@ export class ProductView {
         cardPrice.textContent = product.price !== null ? `${product.price} синапсов` : 'Бесценно';
 
         cardElement.addEventListener('click', () => {
-            // const previewContent = this.showProductPreview(product)
             this.events.emit('product:open', { product })
         })
 
@@ -67,15 +66,18 @@ export class ProductView {
         text.textContent = product.description;
         price.textContent = product.price !== null ? `${product.price} синапсов` : 'Бесценно';
 
-        if (isInBasket) {
+        if (product.price === null) {
+            addToBasketButton.setAttribute('disabled', '');
+            addToBasketButton.textContent = 'Недоступно';
+        } else if (isInBasket) {
             addToBasketButton.setAttribute('disabled', '');
             addToBasketButton.textContent = 'Уже в корзине';
         } else {
             addToBasketButton.addEventListener('click', () => {
-                this.events.emit('basket:add', product)
+                this.events.emit('basket:add', product);
                 addToBasketButton.setAttribute('disabled', '');
                 addToBasketButton.textContent = 'Уже в корзине';
-            })
+            });
         }
 
         return previewElement;
