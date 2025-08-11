@@ -21,8 +21,9 @@ export class CheckoutModel {
 
     validateContacts(data: IContacts): boolean {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const phoneRegex = /^\d{7,15}$/;
+        const phoneRegex = /^(?:\+7|8)\d{10}$/;
 
         return emailRegex.test(data.email) && phoneRegex.test(data.phone);
     }
+
 }

@@ -1,14 +1,13 @@
-import { CheckoutModel } from "../model/CheckoutModel";
 import { EventEmitter } from "../shared/events";
 import { ensureElement } from "../shared/utils";
 
 export class CheckoutView {
     private _container: HTMLElement;
     protected _checkoutOrderTemplate: HTMLTemplateElement;
-    private _formElement: HTMLFormElement;
     protected _contactTemplate: HTMLTemplateElement;
+    private _formElement!: HTMLFormElement;
 
-    constructor(container: HTMLElement, private events: EventEmitter, private model: CheckoutModel) {
+    constructor(container: HTMLElement, private events: EventEmitter) {
         this._container = container;
         this._checkoutOrderTemplate = ensureElement<HTMLTemplateElement>('#order');
         this._contactTemplate = ensureElement<HTMLTemplateElement>('#contacts');
@@ -23,39 +22,36 @@ export class CheckoutView {
         const addressInput = this._formElement.querySelector('input[name="address"]') as HTMLInputElement;
         const continueButton = this._formElement.querySelector('.order__button') as HTMLButtonElement;
 
-        continueButton.disabled = true;
+        this.setOrderNextEnabled(false);
 
         let selectedPayment: 'card' | 'cash' | '' = '';
 
-        const updateButtonState = () => {
-            const addressFilled = addressInput.value.trim().length > 0;
-            const paymentSelected = selectedPayment !== '';
-            continueButton.disabled = !(addressFilled && paymentSelected);
+        const emitOrderInput = () => {
+            this.events.emit('checkout:order:input', {
+                payment: selectedPayment,
+                address: addressInput.value.trim()
+            });
         };
 
         byCardButton.addEventListener('click', () => {
             selectedPayment = 'card';
             byCardButton.classList.add('button_alt-active');
             byCashButton.classList.remove('button_alt-active');
-            updateButtonState();
+            emitOrderInput();
         });
 
         byCashButton.addEventListener('click', () => {
             selectedPayment = 'cash';
             byCashButton.classList.add('button_alt-active');
             byCardButton.classList.remove('button_alt-active');
-            updateButtonState();
+            emitOrderInput();
         });
 
-        addressInput.addEventListener('input', updateButtonState);
+        addressInput.addEventListener('input', emitOrderInput);
 
-        continueButton.addEventListener('click', (event) => {
-            event.preventDefault()
-            if (!selectedPayment || !addressInput.value.trim()) {
-                return;
-            }
-
-            this.events.emit('checkout:step2', {
+        this._formElement.addEventListener('submit', (event) => {
+            event.preventDefault();
+            this.events.emit('checkout:order:submit', {
                 payment: selectedPayment,
                 address: addressInput.value.trim()
             });
@@ -63,6 +59,13 @@ export class CheckoutView {
 
         this._container.innerHTML = '';
         this._container.appendChild(this._formElement);
+    }
+
+    setOrderNextEnabled(enabled: boolean) {
+        try {
+            const btn = this._formElement.querySelector('.order__button') as HTMLButtonElement;
+            if (btn) btn.disabled = !enabled;
+        } catch (e) { }
     }
 
     renderContactForm() {
@@ -73,57 +76,34 @@ export class CheckoutView {
         const phoneInput = this._formElement.querySelector('input[name="phone"]') as HTMLInputElement;
         const submitButton = this._formElement.querySelector('button[type="submit"]') as HTMLButtonElement;
 
-        const updateButtonState = () => {
-            const data = {
+        submitButton.disabled = true;
+
+        const emitInput = () => {
+            this.events.emit('checkout:contacts:input', {
                 email: emailInput.value.trim(),
                 phone: phoneInput.value.trim()
-            };
-
-            submitButton.disabled = !this.model.validateContacts(data);
+            });
         };
 
-        emailInput.addEventListener('input', updateButtonState);
-        phoneInput.addEventListener('input', updateButtonState);
+        emailInput.addEventListener('input', emitInput);
+        phoneInput.addEventListener('input', emitInput);
 
         this._formElement.addEventListener('submit', (event) => {
             event.preventDefault();
-
-            const data = {
+            this.events.emit('checkout:submit', {
                 email: emailInput.value.trim(),
                 phone: phoneInput.value.trim()
-            };
-
-            if (!this.model.validateContacts(data)) {
-                alert('Введите корректные Email и номер телефона');
-                return;
-            }
-
-            this.events.emit('checkout:complete', {
-                name: '', 
-                ...data
             });
         });
 
-        submitButton.disabled = true; 
         this._container.innerHTML = '';
         this._container.appendChild(this._formElement);
     }
 
-
-    renderSuccessScreen(total: number) {
-        const template = document.querySelector('#success') as HTMLTemplateElement;
-        const clone = template.content.cloneNode(true) as DocumentFragment;
-
-        const description = clone.querySelector('.order-success__description') as HTMLElement;
-        const closeButton = clone.querySelector('.order-success__close') as HTMLButtonElement;
-
-        description.textContent = `Списано ${total} синапсов`;
-
-        this._container.innerHTML = '';
-        this._container.appendChild(clone);
-
-        closeButton.addEventListener('click', () => {
-            this.events.emit('success:close');
-        });
+    setContactSubmitEnabled(enabled: boolean) {
+        try {
+            const btn = this._formElement.querySelector('button[type="submit"]') as HTMLButtonElement;
+            if (btn) btn.disabled = !enabled;
+        } catch (e) { }
     }
 }

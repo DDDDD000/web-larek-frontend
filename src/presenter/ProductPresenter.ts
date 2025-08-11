@@ -1,37 +1,38 @@
-import { Modal } from "../components/Modal";
-import { BasketModel } from "../model/BasketModel";
 import { ProductModel } from "../model/ProductModel";
-import { IProduct } from "../model/types";
-import { IEvents } from "../shared/events";
 import { ProductView } from "../view/ProductView";
+import { MainPageView } from "../view/MainPageView";
+import { EventEmitter } from "../shared/events";
+import { BasketModel } from "../model/BasketModel";
+import { Modal } from "../components/Modal";
 
 export class ProductPresenter {
-    protected _model: ProductModel;
-    protected _view: ProductView;
-    private _modal: Modal;
+    private modal: Modal;
 
-    constructor(model: ProductModel, view: ProductView, private events: IEvents, private basketModel: BasketModel) {
-        this._model = model;
-        this._view = view;
-
-        const modalContainer = document.querySelector('.modal') as HTMLElement;
-        this._modal = new Modal(modalContainer, this.events)
-    }
-    init(): void {
-        this._model.getProducts()
-            .then(products => {
-                this._view.renderCatalog(products),
-                    this.events.on('product:open', this.handleOpenProduct.bind(this));
-            })
+    constructor(
+        private model: ProductModel,
+        private productView: ProductView,
+        private mainView: MainPageView,
+        private events: EventEmitter,
+        private basketModel: BasketModel,
+        private modalContainer: HTMLElement
+    ) {
+        this.modal = new Modal(this.modalContainer, this.events);
     }
 
-    handleOpenProduct({ product }: { product: IProduct }) {
-        const isInBasket = this.basketContainsProduct(product.id);
-        const content = this._view.showProductPreview(product, isInBasket);
-        this._modal.render({ content })
+    async init() {
+        const products = await this.model.getProducts();
+
+        const cardElements = products.map(p => this.productView.createCard(p));
+        this.mainView.render(cardElements);
+
+        this.events.on('product:open', (payload: { product: any }) => {
+            this.handleOpenProduct(payload.product);
+        });
     }
 
-    basketContainsProduct(productId: string): boolean {
-        return this.basketModel.products.some(item => item.id === productId);
+    private handleOpenProduct(product: any) {
+        const isInBasket = this.basketModel.products.some(item => item.id === product.id);
+        const preview = this.productView.showProductPreview(product, isInBasket);
+        this.modal.render({ content: preview });
     }
 }

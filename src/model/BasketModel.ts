@@ -1,4 +1,4 @@
-import { IBasketCard, IProduct } from "./types"
+import { IBasketCard } from "./types"
 
 export class BasketModel {
     protected _products: IBasketCard[];
