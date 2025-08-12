@@ -25,7 +25,10 @@
     // min-height: 90vmin;
     border-radius: 3rem;
     box-sizing: border-box;
-    position: relative;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
   }
 
   &__content {
@@ -59,7 +62,7 @@
   }
 
   &__message {
-    white-space:nowrap;
+    white-space: nowrap;
     max-width: 60%;
     text-overflow: ellipsis;
     overflow: hidden;
@@ -67,5 +70,10 @@
     &_error {
       color: $error;
     }
+  }
+
+  &_no-scroll{
+    overflow: hidden;
+    height: 100%;
   }
 }

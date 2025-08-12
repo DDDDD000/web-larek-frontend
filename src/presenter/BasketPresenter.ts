@@ -1,4 +1,3 @@
-// src/presenter/BasketPresenter.ts
 import { BasketModel } from "../model/BasketModel";
 import { EventEmitter } from "../shared/events";
 import { BasketView } from "../view/BasketView";
@@ -19,7 +18,12 @@ export class BasketPresenter {
     ) {
         this.events.on('basket:add', this.handleAdd.bind(this));
         this.events.on('basket:remove', this.handleRemove.bind(this));
-        this.events.on('basket:changed', this.updateCounter.bind(this));
+        this.events.on('basket:changed', () => {
+            this.updateCounter();
+            if (this.modalContainer.querySelector('.basket')) {
+                this.renderBasket();
+            }
+        });
     }
 
     init() {
@@ -45,18 +49,25 @@ export class BasketPresenter {
     }
 
     open() {
+        this.renderBasket();
+    }
+
+    private renderBasket() {
         const basketElement = this.basketTemplate.content.firstElementChild!.cloneNode(true) as HTMLElement;
         const basketView = new BasketView(basketElement, this.events);
 
-        const items = this.model.products.map((p) => {
+        const items = this.model.products.map((p, index) => {
             const clone = this.cardBasketTemplate.content.cloneNode(true) as DocumentFragment;
             const itemEl = clone.querySelector('.basket__item') as HTMLElement;
             const title = clone.querySelector('.card__title') as HTMLElement;
             const price = clone.querySelector('.card__price') as HTMLElement;
             const deleteBtn = clone.querySelector('.basket__item-delete') as HTMLButtonElement;
+            const indexEl = clone.querySelector('.basket__item-index') as HTMLElement;
 
             title.textContent = p.title;
             price.textContent = `${p.price} синапсов`;
+
+            if (indexEl) indexEl.textContent = String(index + 1);
 
             deleteBtn.addEventListener('click', () => {
                 this.events.emit('basket:remove', { id: p.id });
@@ -78,4 +89,5 @@ export class BasketPresenter {
         const modal = new Modal(this.modalContainer, this.events);
         modal.render({ content: basketView.container });
     }
+
 }

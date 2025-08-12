@@ -3,11 +3,33 @@ import { CDN_URL } from "../shared/constants";
 import { EventEmitter } from "../shared/events";
 
 export class ProductView {
+
+    private categoryColors: Record<string, string> = {
+        "софт-скил": "soft",
+        "другое": "other",
+        "кнопка": "button",
+        "хард-скил": "hard",
+        "дополнительное": "additional"
+    };
+
     constructor(
         private cardTemplate: HTMLTemplateElement,
         private previewTemplate: HTMLTemplateElement,
         private events: EventEmitter
     ) { }
+
+    private applyCategoryStyle(categoryElement: HTMLElement, categoryName: string) {
+        categoryElement.textContent = categoryName;
+
+        categoryElement.classList.remove(
+            ...Object.values(this.categoryColors).map(c => `card__category_${c}`)
+        );
+
+        const colorKey = this.categoryColors[categoryName];
+        if (colorKey) {
+            categoryElement.classList.add(`card__category_${colorKey}`);
+        }
+    }
 
     createCard(product: IProduct): HTMLElement {
         const clone = this.cardTemplate.content.cloneNode(true) as DocumentFragment;
@@ -21,6 +43,7 @@ export class ProductView {
         title.textContent = product.title;
         image.src = `${CDN_URL}${product.image}`;
         image.alt = product.title;
+        this.applyCategoryStyle(category, product.category)
         category.textContent = product.category;
         price.textContent = product.price !== null ? `${product.price} синапсов` : 'Бесценно';
 
