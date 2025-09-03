@@ -23,7 +23,7 @@ const checkoutModel = new CheckoutModel();
 
 // Views и презентеры
 const mainView = new MainPageView(document.body, events);
-const productView = new ProductView(cardCatalogTemplate, cardPreviewTemplate, events);
+const productView = new ProductView(cardCatalogTemplate, cardPreviewTemplate, cardBasketTemplate, events);
 
 const modalContainer = document.querySelector('.modal') as HTMLElement;
 
