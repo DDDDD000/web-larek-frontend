@@ -42,10 +42,10 @@ const basketPresenter = new BasketPresenter(
     basketModel,
     events,
     modalContainer,
-    cardBasketTemplate,
-    basketTemplate,
     checkoutModel,
-    mainView
+    basketTemplate,
+    mainView,
+    productView,
 );
 basketPresenter.init();
 

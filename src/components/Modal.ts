@@ -27,13 +27,11 @@ export class Modal extends Component<IModalData> {
 
     open() {
         this.container.classList.add('modal_active');
-        document.body.classList.add('modal_no-scroll');
         this.events.emit('modal:open');
     }
 
     close() {
         this.container.classList.remove('modal_active');
-        document.body.classList.remove('modal_no-scroll');
         this.content = null;
         this.events.emit('modal:close');
     }

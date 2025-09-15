@@ -5,16 +5,17 @@ import { CheckoutView } from "../view/CheckoutView";
 import { CheckoutPresenter } from "./CheckoutPresenter";
 import { CheckoutModel } from "../model/CheckoutModel";
 import { Modal } from "../components/Modal";
+import { ProductView } from "../view/ProductView";
 
 export class BasketPresenter {
     constructor(
         private model: BasketModel,
         private events: EventEmitter,
         private modalContainer: HTMLElement,
-        private cardBasketTemplate: HTMLTemplateElement,
-        private basketTemplate: HTMLTemplateElement,
         private checkoutModel: CheckoutModel,
-        private mainPageView: any
+        private basketTemplate: HTMLTemplateElement,
+        private mainPageView: any,
+        private productView: ProductView,
     ) {
         this.events.on('basket:add', this.handleAdd.bind(this));
         this.events.on('basket:remove', this.handleRemove.bind(this));
@@ -57,23 +58,7 @@ export class BasketPresenter {
         const basketView = new BasketView(basketElement, this.events);
 
         const items = this.model.products.map((p, index) => {
-            const clone = this.cardBasketTemplate.content.cloneNode(true) as DocumentFragment;
-            const itemEl = clone.querySelector('.basket__item') as HTMLElement;
-            const title = clone.querySelector('.card__title') as HTMLElement;
-            const price = clone.querySelector('.card__price') as HTMLElement;
-            const deleteBtn = clone.querySelector('.basket__item-delete') as HTMLButtonElement;
-            const indexEl = clone.querySelector('.basket__item-index') as HTMLElement;
-
-            title.textContent = p.title;
-            price.textContent = `${p.price} синапсов`;
-
-            if (indexEl) indexEl.textContent = String(index + 1);
-
-            deleteBtn.addEventListener('click', () => {
-                this.events.emit('basket:remove', { id: p.id });
-            });
-
-            return itemEl;
+            return this.productView.createBasketCard(p, index);
         });
 
         basketView.render(items);

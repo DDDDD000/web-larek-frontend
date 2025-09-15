@@ -1,6 +1,12 @@
-import { IProduct } from "../model/types";
+import { Modal } from "../components/Modal";
+import { BasketModel } from "../model/BasketModel";
+import { CheckoutModel } from "../model/CheckoutModel";
+import { IBasketCard, IProduct } from "../model/types";
+import { CheckoutPresenter } from "../presenter/CheckoutPresenter";
 import { CDN_URL } from "../shared/constants";
 import { EventEmitter } from "../shared/events";
+import { BasketView } from "./BasketView";
+import { CheckoutView } from "./CheckoutView";
 
 export class ProductView {
 
@@ -15,13 +21,42 @@ export class ProductView {
     constructor(
         private cardTemplate: HTMLTemplateElement,
         private previewTemplate: HTMLTemplateElement,
-        private basketTemplate: HTMLTemplateElement,
+        private cardBasketTemplate: HTMLTemplateElement,
         private events: EventEmitter
     ) { }
-    private createElementFromTemplate(template: HTMLTemplateElement): HTMLElement {
-        return template.content.firstElementChild!.cloneNode(true) as HTMLElement;
+
+    private fillCardBasicFields(
+        clone: DocumentFragment,
+        product: IProduct,
+        selector: string = '.card'
+    ): { element: HTMLElement, title: HTMLElement, image: HTMLImageElement, category: HTMLElement, price: HTMLElement } {
+
+        const element = clone.querySelector(selector) as HTMLElement;
+        const title = clone.querySelector('.card__title') as HTMLElement;
+        const image = clone.querySelector('.card__image') as HTMLImageElement;
+        const category = clone.querySelector('.card__category') as HTMLElement;
+        const price = clone.querySelector('.card__price') as HTMLElement;
+
+        title.textContent = product.title;
+        image.src = `${CDN_URL}${product.image}`;
+        image.alt = product.title;
+        category.textContent = product.category;
+        price.textContent = product.price !== null ? `${product.price} синапсов` : 'Бесценно';
+        this.applyCategoryStyle(category, product.category);
+
+        return { element, title, image, category, price };
     }
 
+    private createCardFromTemplate(
+        template: HTMLTemplateElement,
+        product: IProduct,
+        mainSelector: string
+    ): { element: HTMLElement, title: HTMLElement, image: HTMLImageElement, category: HTMLElement, price: HTMLElement } {
+
+        const clone = template.content.cloneNode(true) as DocumentFragment;
+        return this.fillCardBasicFields(clone, product, mainSelector);
+    }
+    
     private applyCategoryStyle(categoryElement: HTMLElement, categoryName: string) {
         categoryElement.textContent = categoryName;
 
@@ -35,49 +70,24 @@ export class ProductView {
         }
     }
 
-    private fillCardData(cardElement: HTMLElement, product: IProduct) {
-        const title = cardElement.querySelector(".card__title") as HTMLElement;
-        const price = cardElement.querySelector(".card__price") as HTMLElement;
-        const image = cardElement.querySelector(".card__image") as HTMLImageElement;
-        const category = cardElement.querySelector(".card__category") as HTMLElement;
-
-        if (title) title.textContent = product.title;
-        if (price) price.textContent = product.price ? `${product.price} синапсов` : "Бесценно";
-        if (image) image.src = `${CDN_URL}${product.image}`;
-        if (category) {
-            category.textContent = product.category;
-            const colorClass = this.categoryColors[product.category] || "other";
-            category.className = `card__category card__category_${colorClass}`;
-        }
-    }
-
     createCard(product: IProduct): HTMLElement {
-        const card = this.createElementFromTemplate(this.cardTemplate);
-        this.fillCardData(card, product);
-        card.addEventListener("click", () => {
-            this.events.emit("card:select", product);
+        const { element: el } = this.createCardFromTemplate(this.cardTemplate, product, '.gallery__item');
+
+        el.addEventListener('click', () => {
+            this.events.emit('product:open', { product });
         });
-        return card;
+
+        return el;
     }
 
     showProductPreview(product: IProduct, isInBasket: boolean = false): HTMLElement {
         const clone = this.previewTemplate.content.cloneNode(true) as DocumentFragment;
-        const el = clone.querySelector('.card') as HTMLElement;
+        const { element: el, title, image, category, price } = this.fillCardBasicFields(clone, product);
 
-        const title = clone.querySelector('.card__title') as HTMLElement;
-        const image = clone.querySelector('.card__image') as HTMLImageElement;
-        const category = clone.querySelector('.card__category') as HTMLElement;
         const text = clone.querySelector('.card__text') as HTMLElement;
-        const price = clone.querySelector('.card__price') as HTMLElement;
         const addBtn = clone.querySelector('.card__button') as HTMLButtonElement;
 
-        title.textContent = product.title;
-        image.src = `${CDN_URL}${product.image}`;
-        image.alt = product.title;
-        category.textContent = product.category;
-        this.applyCategoryStyle(category, product.category)
         text.textContent = product.description;
-        price.textContent = product.price !== null ? `${product.price} синапсов` : 'Бесценно';
 
         if (product.price === null) {
             addBtn.disabled = true;
@@ -97,5 +107,27 @@ export class ProductView {
         return el;
     }
 
-    
+    createBasketCard(product: IBasketCard, index: number): HTMLElement {
+        if (!this.cardBasketTemplate) {
+            throw new Error('cardBasketTemplate не передана');
+        }
+
+        const clone = this.cardBasketTemplate.content.cloneNode(true) as DocumentFragment;
+        const itemEl = clone.querySelector('.basket__item') as HTMLElement;
+        const title = clone.querySelector('.card__title') as HTMLElement;
+        const price = clone.querySelector('.card__price') as HTMLElement;
+        const deleteBtn = clone.querySelector('.basket__item-delete') as HTMLButtonElement;
+        const indexEl = clone.querySelector('.basket__item-index') as HTMLElement;
+
+        title.textContent = product.title;
+        price.textContent = `${product.price} синапсов`;
+
+        if (indexEl) indexEl.textContent = String(index + 1);
+
+        deleteBtn.addEventListener('click', () => {
+            this.events.emit('basket:remove', { id: product.id });
+        });
+
+        return itemEl;
+    }
 }

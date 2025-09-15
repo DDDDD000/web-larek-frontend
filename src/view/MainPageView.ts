@@ -14,6 +14,17 @@ export class MainPageView {
         this.basketButton.addEventListener('click', () => {
             this.events.emit('basket:open');
         });
+
+        this.events.on('modal:open', this.handleModalOpen.bind(this));
+        this.events.on('modal:close', this.handleModalClose.bind(this));
+    }
+
+    private handleModalOpen() {
+        document.body.classList.add('modal_no-scroll');
+    }
+
+    private handleModalClose() {
+        document.body.classList.remove('modal_no-scroll');
     }
 
     render(cards: HTMLElement[]) {
@@ -23,4 +34,5 @@ export class MainPageView {
     setCounter(count: number) {
         this.basketCounter.textContent = String(count);
     }
+
 }
